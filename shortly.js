@@ -2,6 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
 
 
 var db = require('./app/config');
@@ -21,17 +22,34 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
+app.use(cookieParser());
+
+app.get('/signup', function(req, res) {
+  res.render('signup');
+});
+
+app.post('/signup', util.createUser, function(req, res) {
+  res.redirect('/');
+});
+
+app.get('/login', function(req, res) {
+  res.render('login');
+});
+
+app.post('/login', util.authUser, function(req, res) {
+  res.redirect('/');
+});
 
 
-app.get('/', function(req, res) {
+app.get('/', util.checkAuth, function(req, res) {
   res.render('index');
 });
 
-app.get('/create', function(req, res) {
+app.get('/create', util.checkAuth, function(req, res) {
   res.render('index');
 });
 
-app.get('/links', function(req, res) {
+app.get('/links', util.checkAuth, function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
   });
@@ -70,42 +88,7 @@ app.post('/links', function(req, res) {
   });
 });
 
-app.get('/signup', function(req, res) {
-  res.render('signup');
-});
 
-app.post('/signup', function(req, res) {
-
-    
-  new User().addUser(req.body.username, req.body.password, function(boolean){
-    console.log(this);
-    res.render('index');
-  })
-});
-
-/************************************************************/
-// Write your authentication routes here
-/************************************************************/
-
-
-
-app.get('/login', function(req, res) {
-  res.render('login');
-});
-
-app.post('/login', function(req, res) {
-  var username = req.body.username;
-
-  new User({username: req.body.username}).fetch().then(function(user){
-    if(user){
-      user.authUser(req.body.username, req.body.password, function(isFound){
-        Users.add(this);
-        console.log(isFound);
-        res.render('index');
-      });
-    }
-  });
-});
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
