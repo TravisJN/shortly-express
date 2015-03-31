@@ -3,6 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
+var session = require('express-session');
 
 
 var db = require('./app/config');
@@ -22,7 +23,18 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
+
 app.use(cookieParser());
+app.use(session({
+  secret: 'joejoejoejoejoejoe',
+  resave: false,
+  saveUninitialized: true
+}));
+
+app.get('/logout', function(req, res) {
+  req.session.destroy();
+  res.redirect('/login');
+});
 
 app.get('/signup', function(req, res) {
   res.render('signup');
@@ -33,6 +45,7 @@ app.post('/signup', util.createUser, function(req, res) {
 });
 
 app.get('/login', function(req, res) {
+
   res.render('login');
 });
 

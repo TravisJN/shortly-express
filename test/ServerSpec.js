@@ -1,4 +1,4 @@
-var expect = require('chai').expect;
+  var expect = require('chai').expect;
 var request = require('request');
 
 var db = require('../app/config');
